@@ -1,4 +1,4 @@
-# 🦠 EpiGrafo — Simulador de Propagación Epidémica con Contención Óptima
+# 🦠 Simulador de Crecimiento y Ralentización Epidémica
 
 > Simulación realista de epidemias sobre redes de localidades modeladas como grafos,  
 > con motor de contención óptima bajo restricciones económicas. **Java puro, sin dependencias externas.**
