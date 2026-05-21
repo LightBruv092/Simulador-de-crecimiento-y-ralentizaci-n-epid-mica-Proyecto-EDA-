@@ -7,7 +7,7 @@
 
 ## 📌 Descripción General
 
-**EpiGrafo** modela la propagación de una epidemia a través de concentraciones de población (**localidades**) interconectadas. Cada localidad posee propiedades demográficas y sanitarias que afectan directamente la dinámica de contagio. El sistema incorpora un motor de optimización capaz de decidir qué conexiones cortar para contener la epidemia de la forma más eficiente, respetando un presupuesto económico limitado.
+Modelo de propagación de una epidemia a través de concentraciones de población (**localidades**) interconectadas. Cada localidad posee propiedades demográficas y sanitarias que afectan directamente la dinámica de contagio. El sistema incorpora un motor de optimización capaz de decidir qué conexiones cortar para contener la epidemia de la forma más eficiente, respetando un presupuesto económico limitado.
 
 Todo el sistema está implementado en **Java estándar (JDK 17+)** sin librerías externas, salvo las indicadas al final.
 
