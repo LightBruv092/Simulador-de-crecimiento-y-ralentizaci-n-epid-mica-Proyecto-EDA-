@@ -1,11 +1,11 @@
-# 🦠 Simulador de Crecimiento y Ralentización Epidémica
+# Simulador de Crecimiento y Ralentización Epidémica
 
 > Simulación realista de epidemias sobre redes de localidades modeladas como grafos,  
 > con motor de contención óptima bajo restricciones económicas. **Java puro, sin dependencias externas.**
 
 ---
 
-## 📌 Descripción General
+## Descripción General
 
 Modelo de propagación de una epidemia a través de concentraciones de población (**localidades**) interconectadas. Cada localidad posee propiedades demográficas y sanitarias que afectan directamente la dinámica de contagio. El sistema incorpora un motor de optimización capaz de decidir qué conexiones cortar para contener la epidemia de la forma más eficiente, respetando un presupuesto económico limitado.
 
@@ -13,7 +13,7 @@ Todo el sistema está implementado en **Java estándar (JDK 17+)** sin librería
 
 ---
 
-## 🗺️ Arquitectura del Sistema
+## Arquitectura del Sistema
 
 ```
 EpiGrafo
@@ -37,7 +37,7 @@ EpiGrafo
 
 ---
 
-## 🏘️ El Nodo: La Localidad
+## Localidad
 
 Una **localidad** no es simplemente una ciudad. Es una concentración de población con propiedades que influyen de forma realista en cómo se origina, amplifica y resiste la epidemia.
 
@@ -72,7 +72,7 @@ public class Localidad {
 }
 ```
 
-### ¿Por qué cada propiedad?
+### Propiedades
 
 | Propiedad | Efecto en el modelo |
 |-----------|---------------------|
@@ -85,7 +85,7 @@ public class Localidad {
 
 ---
 
-## 🔗 La Arista: La Conexión
+## Conexión
 
 Una conexión entre dos localidades representa un **canal de movilidad** con propiedades que determinan cuánta enfermedad fluye a través de ella.
 
@@ -123,7 +123,7 @@ public enum TipoConexion {
 
 ---
 
-## 🧬 Módulo 1 — Motor de Simulación SEIR Realista
+## Módulo 1 — Motor de Simulación SEIR Realista
 
 ### Ecuaciones del Modelo
 
@@ -218,7 +218,7 @@ public void ejecutarSimulacion(Grafo grafo, int ticks) {
 
 ---
 
-## ✂️ Módulo 2 — Motor de Contención Óptima
+## Módulo 2 — Motor de Contención Óptima
 
 ### Definición del Problema
 
@@ -334,7 +334,7 @@ Map<Conexion, Double> calcularCentralidadEpidemica(Grafo grafo) {
 
 ---
 
-## 🏗️ Estructura Interna del Grafo
+## Estructura Interna del Grafo
 
 Implementado con **Java estándar** usando listas de adyacencia:
 
@@ -360,7 +360,7 @@ public class Grafo {
 
 ---
 
-## 🔄 Flujo de Ejecución Completo
+## Flujo de Ejecución Completo
 
 ```
 [1] Carga del grafo (JSON / CSV con Java estándar)
@@ -384,7 +384,7 @@ public class Grafo {
 
 ---
 
-## 📊 Métricas del Sistema
+## Métricas del Sistema
 
 | Métrica | Cálculo |
 |--------|---------|
@@ -396,7 +396,7 @@ public class Grafo {
 
 ---
 
-## 📁 Formato de Entrada (JSON, parseado con `javax.json` o manualmente)
+## Formato de Entrada (JSON, parseado con `javax.json` o manualmente)
 
 ```json
 {
@@ -436,6 +436,6 @@ public class Grafo {
 | `org.json` *(opcional)* | Parseo cómodo de JSON de entrada | `java.util.Properties` o parser manual |
 | `JFreeChart` *(opcional)* | Gráficas de evolución temporal | Exportar CSV y visualizar externamente |
 
-> ✅ El núcleo funcional completo — simulación + grafo + optimización — **no requiere ninguna librería externa**.
+> El núcleo funcional completo — simulación + grafo + optimización — **no requiere ninguna librería externa**.
 
 *EpiGrafo · Java 17+ · Sin dependencias externas obligatorias · Modelado realista sobre grafos*
