@@ -132,6 +132,8 @@ public class EpiGrafoUI extends JFrame {
 
         setLocationRelativeTo(null);
         setVisible(true);
+        
+        SwingUtilities.invokeLater(() -> {calcularPosicionesNodos(); panelGrafo.repaint();});
     }
 
     // --- Panel de controles ---
@@ -612,7 +614,7 @@ public class EpiGrafoUI extends JFrame {
     // =========================================================
 
     private void detectarClicNodo(int x, int y) {
-        final int R = 34;
+        final int R = 36;
         for (int i = 0; i < grafo.getNumLocalidades(); i++) {
             Point p = posiciones.get(i);
             if (p != null) {
@@ -634,13 +636,31 @@ public class EpiGrafoUI extends JFrame {
 
     private void calcularPosicionesNodos() {
         posiciones.clear();
+
         int n = grafo.getNumLocalidades();
-        int cx = 330, cy = 290, radio = Math.min(200, 80 + n * 20);
+        if (n == 0) return;
+
+        int w = (panelGrafo != null) ? panelGrafo.getWidth() : 0;
+        int h = (panelGrafo != null) ? panelGrafo.getHeight() : 0;
+
+        if (w <= 0 || h <= 0) {
+            w = getWidth();
+            h = getHeight();
+        }
+
+        int cx = w / 2;
+        int cy = h / 2;
+
+        int margen = 80;
+        int radioMax = Math.min(w, h) / 2 - margen;
+        int radio = Math.min(200, Math.max(60, Math.min(radioMax, 80 + n * 12)));
+
         for (int i = 0; i < n; i++) {
             double ang = 2 * Math.PI * i / n - Math.PI / 2;
             posiciones.put(i, new Point(
-                    (int)(cx + radio * Math.cos(ang)),
-                    (int)(cy + radio * Math.sin(ang))));
+                    (int) (cx + radio * Math.cos(ang)),
+                    (int) (cy + radio * Math.sin(ang))
+            ));
         }
     }
 
@@ -651,6 +671,14 @@ public class EpiGrafoUI extends JFrame {
             setBackground(new Color(15, 20, 30));
             addMouseListener(new MouseAdapter() {
                 @Override public void mouseClicked(MouseEvent e) { detectarClicNodo(e.getX(), e.getY()); }
+            });
+            
+            addComponentListener(new ComponentAdapter() {
+                @Override
+                public void componentResized(ComponentEvent e) {
+                    calcularPosicionesNodos();
+                    repaint();
+                }
             });
         }
 
@@ -688,7 +716,7 @@ public class EpiGrafoUI extends JFrame {
         }
 
         private void dibujarNodos(Graphics2D g2) {
-        final int R = 60;
+        final int R = 48;
 
         for (int i = 0; i < grafo.getNumLocalidades(); i++) {
             Localidad l = grafo.getLocalidad(i);
