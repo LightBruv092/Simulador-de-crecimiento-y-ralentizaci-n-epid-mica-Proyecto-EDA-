@@ -50,8 +50,6 @@ public class EpiGrafoUI extends JFrame {
             + limpio.substring(1).toLowerCase()
             + ".png";
             
-            
-            
             // ===== CACHE =====
             if (cacheImagenes.containsKey(nombreArchivo)) {
                 return cacheImagenes.get(nombreArchivo);
