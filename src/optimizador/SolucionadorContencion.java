@@ -18,7 +18,7 @@ import java.util.List;
  */
 public class SolucionadorContencion {
 
-    private final GrafoEpidemia  grafo;
+    private final GrafoEpidemia   grafo;
     private final ModeloEconomico economico;
     private int presupuesto;
 
@@ -37,6 +37,7 @@ public class SolucionadorContencion {
         double fracMax     = Math.max(fracOrigen, fracDestino);
         return (fracMax * c.tasaMovilidad) / Math.max(1, economico.costoDeCorte(c));
     }
+
     public List<EstrategiaCorte> resolver() {
         List<Conexion> mst        = grafo.kruskal();
         List<Conexion> candidatos = aristasFueraMST(mst);
@@ -50,9 +51,12 @@ public class SolucionadorContencion {
         for (Conexion c : candidatos) {
             int costo = economico.costoDeCorte(c);
             if (costo <= restante) {
+                // Marcar ambas direcciones del grafo como cortadas
                 c.cortada = true;
+                cortarDireccionInversa(c);
+
                 restante -= costo;
-                cortes.add(new EstrategiaCorte(c, costo, peligro(c)>0));
+                cortes.add(new EstrategiaCorte(c, costo, peligro(c) > 0));
                 System.out.printf("Cortando: %s <-> %s ($%d, peligro=%.3f)%n",
                         grafo.getLocalidad(c.origen).nombre,
                         grafo.getLocalidad(c.destino).nombre,
@@ -62,6 +66,20 @@ public class SolucionadorContencion {
         System.out.printf("Presupuesto usado: $%d / $%d%n",
                 presupuesto - restante, presupuesto);
         return cortes;
+    }
+
+    /**
+     * Marca como cortada la conexión inversa (destino → origen) en la
+     * lista de adyacencia, para que el corte sea efectivo en ambas
+     * direcciones del grafo bidireccional.
+     */
+    private void cortarDireccionInversa(Conexion c) {
+        for (Conexion rev : grafo.getAdj(c.destino)) {
+            if (rev.destino == c.origen) {
+                rev.cortada = true;
+                break;
+            }
+        }
     }
 
     private List<Conexion> aristasFueraMST(List<Conexion> mst) {
