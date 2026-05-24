@@ -46,6 +46,6 @@ public class Main {
         InformeSimulacion.imprimirResumen(motor.getHistorial());
 
         // Descomenta para UI:
-         javax.swing.SwingUtilities.invokeLater(ui.EpiGrafoUI::new);
+        javax.swing.SwingUtilities.invokeLater(ui.EpiGrafoUI::new);
     }
 }

@@ -19,6 +19,9 @@ import java.io.File;
 import java.util.*;
 import java.util.List;
 
+import java.awt.image.BufferedImage;
+import javax.imageio.ImageIO;
+
 // Interfaz gráfica principal (Swing)
 public class EpiGrafoUI extends JFrame {
 
@@ -35,7 +38,58 @@ public class EpiGrafoUI extends JFrame {
     private JLabel     labelTick;
     private JSlider    sliderPresupuesto;
     private int        nodoSeleccionado = -1;
+    private final Map<String, BufferedImage> cacheImagenes = new HashMap<>();
+    private BufferedImage imagenDefault;
 
+    private BufferedImage cargarImagenCiudad(String nombreCiudad) {
+        try {
+            // "Limpia" el texto
+            String limpio = nombreCiudad.replaceAll("\\s+", "");
+            String nombreArchivo =
+            limpio.substring(0,1).toUpperCase()
+            + limpio.substring(1).toLowerCase()
+            + ".png";
+            
+            
+            
+            // ===== CACHE =====
+            if (cacheImagenes.containsKey(nombreArchivo)) {
+                return cacheImagenes.get(nombreArchivo);
+            }
+
+            // ===== BUSCAR IMAGEN =====
+            System.out.println("BUSCANDO: " + nombreArchivo);
+            java.net.URL url =
+                    getClass().getResource("/mapas/" + nombreArchivo);
+            BufferedImage img;
+            
+            // Si no existe usa default
+            if (url == null) {
+                System.out.println("NO ENCONTRADA: " + nombreArchivo);
+                java.net.URL defaultUrl =
+                        getClass().getResource("/mapas/Default.png");
+
+                if (defaultUrl == null) {
+                    System.out.println("TAMPOCO EXISTE Default.png");
+                    return null;
+                }
+                img = ImageIO.read(defaultUrl);
+
+            } else {
+                System.out.println("CARGADA: " + nombreArchivo);
+                img = ImageIO.read(url);
+            }
+            cacheImagenes.put(nombreArchivo, img);
+            return img;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+    
+
+    
     public EpiGrafoUI() {
         super("EpiGrafo — Simulador de Epidemias");
         inicializarModelo();
@@ -636,73 +690,137 @@ public class EpiGrafoUI extends JFrame {
         }
 
         private void dibujarNodos(Graphics2D g2) {
-            final int R = 34;
-            for (int i = 0; i < grafo.getNumLocalidades(); i++) {
-                Localidad l = grafo.getLocalidad(i);
-                Point     p = posiciones.get(i);
-                if (p == null || l == null) continue;   // guardar contra IDs no secuenciales
-                Color fill = colorPorFraccion(l.fraccionInfectada());
+        final int R = 60;
 
-                g2.setColor(new Color(0, 0, 0, 90));
-                g2.fillOval(p.x - R + 3, p.y - R + 3, R * 2, R * 2);
+        for (int i = 0; i < grafo.getNumLocalidades(); i++) {
+            Localidad l = grafo.getLocalidad(i);
+            Point p = posiciones.get(i);
+
+            if (p == null || l == null) continue;
+            Color fill = colorPorFraccion(l.fraccionInfectada());
+            // sombra
+            g2.setColor(new Color(0, 0, 0, 90));
+            g2.fillOval(p.x - R + 3, p.y - R + 3, R * 2, R * 2);
+
+            // =========================
+            // IMAGEN DEL MAPA
+            // =========================
+            BufferedImage img = cargarImagenCiudad(l.nombre);
+
+            if (img != null) {
+                Shape clipOriginal = g2.getClip();
+                g2.setClip(new java.awt.geom.Ellipse2D.Double(
+                    p.x - R,
+                    p.y - R,
+                    R * 2,
+                    R * 2
+                ));
+
+                g2.drawImage(
+                    img,
+                    p.x - R,
+                    p.y - R,
+                    R * 2,
+                    R * 2,
+                    null
+                );
+                g2.setClip(clipOriginal);
+
+            } else {
+                // fallback si no hay imagen
                 g2.setColor(fill);
                 g2.fillOval(p.x - R, p.y - R, R * 2, R * 2);
-
-                if (i == nodoSeleccionado) {
-                    g2.setColor(new Color(0, 230, 200)); g2.setStroke(new BasicStroke(3.5f));
-                } else {
-                    g2.setColor(Color.WHITE); g2.setStroke(new BasicStroke(2f));
-                }
-                g2.drawOval(p.x - R, p.y - R, R * 2, R * 2);
-
-                g2.setColor(Color.WHITE);
-                g2.setFont(new Font("SansSerif", Font.BOLD, 12));
-                FontMetrics fm = g2.getFontMetrics();
-                String nombre = l.nombre.split(" ")[0];
-                g2.drawString(nombre, p.x - fm.stringWidth(nombre) / 2, p.y);
-
-                String pct = String.format("%.0f%%", l.fraccionInfectada() * 100);
-                g2.setFont(new Font("Monospaced", Font.BOLD, 11));
-                fm = g2.getFontMetrics();
-                g2.setColor(new Color(255, 230, 150));
-                g2.drawString(pct, p.x - fm.stringWidth(pct) / 2, p.y + 15);
-
-                String sub = l.infectados + "/" + l.poblacion;
-                g2.setFont(new Font("Monospaced", Font.PLAIN, 10));
-                fm = g2.getFontMetrics();
-                g2.setColor(new Color(190, 190, 190));
-                g2.drawString(sub, p.x - fm.stringWidth(sub) / 2, p.y + R + 15);
             }
-        }
+            
+            Color c = colorPorFraccion(l.fraccionInfectada());
+            g2.setColor(new Color(c.getRed(), c.getGreen(), c.getBlue(), 180));
+            g2.setStroke(new BasicStroke(6f));
+            g2.drawOval(p.x - R, p.y - R, R * 2, R * 2);
 
-        // Interpolación azul → amarillo → rojo según fracción infectada
-        private Color colorPorFraccion(double f) {
-            f = Math.max(0, Math.min(1, f));
-            if (f < 0.5) {
-                return new Color((int)(f*2*200), (int)(f*2*160+60), (int)((1-f*2)*160+20));
+            // borde del nodo
+            if (i == nodoSeleccionado) {
+                g2.setColor(new Color(0, 230, 200));
+                g2.setStroke(new BasicStroke(3.5f));
+
             } else {
-                double t = (f - 0.5) * 2;
-                return new Color(200, (int)((1-t)*160), 20);
+                g2.setColor(Color.WHITE);
+                g2.setStroke(new BasicStroke(2f));
             }
+
+            g2.drawOval(p.x - R, p.y - R, R * 2, R * 2);
+
+            // nombre ciudad
+            g2.setColor(Color.WHITE);
+            g2.setFont(new Font("SansSerif", Font.BOLD, 12));
+
+            FontMetrics fm = g2.getFontMetrics();
+
+            String nombre = l.nombre.split(" ")[0];
+
+            g2.drawString(
+                    nombre,
+                    p.x - fm.stringWidth(nombre) / 2,
+                    p.y
+            );
+
+            // porcentaje infectado
+            String pct = String.format("%.0f%%", l.fraccionInfectada() * 100);
+
+            g2.setFont(new Font("Monospaced", Font.BOLD, 11));
+            fm = g2.getFontMetrics();
+
+            g2.setColor(new Color(255, 230, 150));
+
+            g2.drawString(
+                    pct,
+                    p.x - fm.stringWidth(pct) / 2,
+                    p.y + 15
+            );
+
+            // infectados / población
+            String sub = l.infectados + "/" + l.poblacion;
+
+            g2.setFont(new Font("Monospaced", Font.PLAIN, 10));
+            fm = g2.getFontMetrics();
+
+            g2.setColor(new Color(190, 190, 190));
+
+            g2.drawString(
+                    sub,
+                    p.x - fm.stringWidth(sub) / 2,
+                    p.y + R + 15
+            );
+        }
         }
 
-        private void dibujarLeyenda(Graphics2D g2) {
-            int x = 12, y = 20;
-            g2.setFont(new Font("SansSerif", Font.PLAIN, 11));
-            for (int i = 0; i <= 4; i++) {
-                g2.setColor(colorPorFraccion(i / 4.0));
-                g2.fillRect(x + i * 28, y, 28, 12);
+            // Interpolación azul → amarillo → rojo según fracción infectada
+            private Color colorPorFraccion(double f) {
+                f = Math.max(0, Math.min(1, f));
+                if (f < 0.5) {
+                    return new Color((int)(f*2*200), (int)(f*2*160+60), (int)((1-f*2)*160+20));
+                } else {
+                    double t = (f - 0.5) * 2;
+                    return new Color(200, (int)((1-t)*160), 20);
+                }
             }
-            g2.setColor(Color.WHITE);
-            g2.setStroke(new BasicStroke(1f));
-            g2.drawRect(x, y, 140, 12);
-            g2.setColor(Color.LIGHT_GRAY);
-            g2.drawString("0%",   x,       y + 26);
-            g2.drawString("50%",  x + 57,  y + 26);
-            g2.drawString("100%", x + 108, y + 26);
-            g2.drawString("infectados", x + 20, y + 40);
+
+            private void dibujarLeyenda(Graphics2D g2) {
+                int x = 12, y = 20;
+                g2.setFont(new Font("SansSerif", Font.PLAIN, 11));
+                for (int i = 0; i <= 4; i++) {
+                    g2.setColor(colorPorFraccion(i / 4.0));
+                    g2.fillRect(x + i * 28, y, 28, 12);
+                }
+                g2.setColor(Color.WHITE);
+                g2.setStroke(new BasicStroke(1f));
+                g2.drawRect(x, y, 140, 12);
+                g2.setColor(Color.LIGHT_GRAY);
+                g2.drawString("0%",   x,       y + 26);
+                g2.drawString("50%",  x + 57,  y + 26);
+                g2.drawString("100%", x + 108, y + 26);
+                g2.drawString("infectados", x + 20, y + 40);
+            }
         }
-    }
 
     // =========================================================
     //  Info panel
