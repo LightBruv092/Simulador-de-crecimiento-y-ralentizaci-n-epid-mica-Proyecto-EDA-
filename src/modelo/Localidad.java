@@ -1,40 +1,34 @@
 package modelo;
 
-/**
- * NODO del grafo.
- * Cada localidad tiene una población total y un contador de infectados.
- *
- * Estado:
- *   infectados = 0                  → sana
- *   0 < infectados < poblacion      → en riesgo / propagándose
- *   infectados == poblacion         → totalmente infectada
- */
+// Nodo del grafo
 public class Localidad {
 
     public final int id;
-    public final String nombre;
-    public final int poblacion;
-
-    public int infectados; // cuántas personas están enfermas ahora mismo
+    public String    nombre;
+    public int       poblacion;
+    public int       infectados;
 
     public Localidad(int id, String nombre, int poblacion) {
-        this.id        = id;
-        this.nombre    = nombre;
-        this.poblacion = poblacion;
+        this.id         = id;
+        this.nombre     = nombre;
+        this.poblacion  = Math.max(1, poblacion);
         this.infectados = 0;
     }
 
-    /** Foco inicial: empieza con N infectados */
     public void semillaInicial(int n) {
-        this.infectados = Math.min(n, poblacion);
+        this.infectados = Math.min(Math.max(0, n), poblacion);
     }
 
-    /** Fracción de la población infectada (0.0 – 1.0) */
+    public void actualizar(String nombre, int poblacion, int infectados) {
+        this.nombre     = nombre;
+        this.poblacion  = Math.max(1, poblacion);
+        this.infectados = Math.min(Math.max(0, infectados), this.poblacion);
+    }
+
     public double fraccionInfectada() {
         return (double) infectados / poblacion;
     }
 
-    /** ¿Tiene al menos un infectado? */
     public boolean esFoco() {
         return infectados > 0;
     }
