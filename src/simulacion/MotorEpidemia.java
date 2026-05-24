@@ -36,7 +36,7 @@ public class MotorEpidemia {
         // Aplicar todos los cambios a la vez
         for (int i = 0; i < grafo.getNumLocalidades(); i++) {
             Localidad l = grafo.getLocalidad(i);
-            l.infectados = Math.min(l.infectados + delta[i], l.poblacion);
+            l.infectados = Math.max(0, Math.min(l.infectados + delta[i], l.poblacion));
         }
 
         EstadoEpidemia estado = new EstadoEpidemia(tickActual, grafo);
